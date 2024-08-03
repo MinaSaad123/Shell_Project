@@ -1,5 +1,6 @@
 //----------------------<Include Libs>
 #include "Commands.h"
+#include "Shell.h"
 #include "TextManipilation.h"
 #include <unistd.h>
 #include <string.h>
@@ -26,14 +27,6 @@ char * Options[Num];             //This array of pointers to store options
 char * Arguments[Num];           //This array of Pointers to store Arguments
 int    ArgNum = 0;
 int    OptnNum = 0;
-
-//==========================================================================================
-
-/******************************************************************************************/
-/*                                        Prototype                                       */
-/******************************************************************************************/
-void ExecuteCommandLine();
-void SelectCommand();
 
 //==========================================================================================
 
@@ -86,54 +79,20 @@ void main()
 		 }
 		//===============================================================================
 
-		//4- know i will get what is command, array of pointers for arrgument, argument number, array of pointers for arrgument option, option number.
+		//4- now i will get what is command, array of pointers for arrgument, argument number, array of pointers for arrgument option, option number.
 		SepArgOptnComm(CommandLine, NumOfStr, &Command, Arguments, (int*)&ArgNum, Options, (int*)&OptnNum);
 		//===============================================================================
 
+		//5-now we can Execute the commandLine.
+		SelectCommand(Command, Arguments, ArgNum, Options, OptnNum);
+		//===============================================================================
 
-		//5- Know we can Execute the commandLine.
-		//ExecuteCommandLine();
-		SelectCommand();
-		
 
 	}
     //=========================================================================================
 
 }
 
-void SelectCommand()
-{
-	if (strcmp(Command, "pwd") == 0)
-	{
 
-		pwd(ArgNum, OptnNum);
-
-	} else if (strcmp(Command, "echo") == 0)
-	{
-
-		echo(Arguments, ArgNum, Options, OptnNum);
-
-	} else if (strcmp(Command, "cp") == 0)
-	{
-		cp(Arguments, ArgNum, Options, OptnNum);
-
-	} else if (strcmp(Command, "mv") == 0)
-	{
-
-		mv(Arguments, ArgNum, Options, OptnNum);
-
-	} else if (strcmp(Command, "help") == 0)
-	{
-		help(ArgNum, OptnNum);
-	
-	} else if (strcmp(Command, "exit") == 0)
-	{
-		MyExit(ArgNum, OptnNum);
-
-	} else
-	{
-		printf("Command not found\n");
-	}
-}
 
 
