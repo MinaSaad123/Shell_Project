@@ -4,6 +4,9 @@
         "textmanipilation.h": "c",
         "commands.h": "c",
         "localvals_linkedlists.h": "c",
-        "localvars_linkedlists.h": "c"
+        "localvars_linkedlists.h": "c",
+        "platform_types.h": "c",
+        "wait.h": "c",
+        "types.h": "c"
     }
 }

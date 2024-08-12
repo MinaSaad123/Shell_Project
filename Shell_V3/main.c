@@ -16,6 +16,9 @@
 /******************************************************************************************/
 /*                               Global variables for Shell                               */
 /******************************************************************************************/
+extern FIFO_buf_t Ready_Queue;
+MyCommand * Temp = NULL;
+MyCommand * Piped_Command = NULL;
 char   ShellMessage[200]; 
 char   CommandLine[110];         //This Buffer to store the writed line by user
 char * Command = NULL;           //This array to store command
@@ -34,15 +37,17 @@ int    default_fd = 0;
 int    readSize = 0;
 int    NumOfStr = 0;
 
-//==========================================================================================
+//=======================================================================================
 
 void main()
 {
+	Pipe_Mode_t Pipe_Mode;
+	int i = 0, Count = 0;
 	/***********************************************************************************/
 	/*                                Core program                                     */
 	/***********************************************************************************/
 
-	//I- Init Shell --FIFO
+	//I- Init Shell -->  Read Username like ./bashrc file Init FIFO
 	Shell_Init();
 	//===================================================================================
 
@@ -57,7 +62,6 @@ void main()
 				printf("Shell: Error with file descriptor\n" );
 				exit(1);	
 			}
-
 		}
 		//===============================================================================
 		
@@ -92,7 +96,6 @@ void main()
 			{
 				printf("Error!\n");
 				continue;
-
 			} 
 
 		} else
@@ -110,29 +113,55 @@ void main()
 		{
 			continue;			
 		}
-		Parsing_Commandline(pCommandLine, NumOfStr, &Command, Arguments, (int*)&ArgNum, Options, (int*)&OptnNum, OutputRedir, (int*)&OutputRedirNum, OutputErorrRedir, (int*)&OutputErorrRedirNum, InputRedir, (int*)&InputRedirNum);
+
+		if (Parsing_Commandline(pCommandLine, NumOfStr, &Command, Arguments, (int*)&ArgNum, Options, (int*)&OptnNum, OutputRedir, (int*)&OutputRedirNum, OutputErorrRedir, (int*)&OutputErorrRedirNum, InputRedir, (int*)&InputRedirNum, &Pipe_Mode) == -1 )
+		{
+			while( FIFO_buf_dequeue(&Ready_Queue, &Temp) != NULL );
+
+			continue;
+		}
 		//===============================================================================
 
 		//9- detect if there is $variable and replace it's sample table.
 		Replace_Variable_With_corresponding_Value(&Command, Arguments, ArgNum);
 		//===============================================================================
 
-		//10- Change redirection if exit
-		if (InputRedirNum != 0 || OutputErorrRedirNum != 0 || OutputRedirNum != 0) 
+		//10- now we can execute the program
+		if (Pipe_Mode == Off)
 		{
-			Redirect_FileDescriptors(OutputRedir, OutputRedirNum, OutputErorrRedir, OutputErorrRedirNum, InputRedir, InputRedirNum, &default_fd);
+			// Change redirection if exit
+			if (InputRedirNum != 0 || OutputErorrRedirNum != 0 || OutputRedirNum != 0) 
+			{
+				Redirect_FileDescriptors(OutputRedir, OutputRedirNum, OutputErorrRedir, OutputErorrRedirNum, InputRedir, InputRedirNum, &default_fd);
+			}
+			//===========================================================================
+
+			// Select the command.
+			SelectCommand(Command, Arguments, ArgNum, Options, OptnNum, Pipe_Mode);
+			//============================================================================
+
+		} else if (Pipe_Mode == On) //I try to support multi redirection within multi pipes but during implement i realize that it will take along time so i cancel it, and time is little.
+		{
+			if ( pipe(Pipe) == -1 )
+			{
+				perror("pipe");
+				return;
+			}
+
+			for(i = 0; i < 2; i++)
+			{
+				if ( FIFO_buf_dequeue(&Ready_Queue, &Piped_Command) != NULL ) 
+				{
+					FindCommandInEnviroment(NULL, NULL, 0, NULL, 0, Piped_Command, On, Count);	
+					Count++;
+				}
+			}
+
+			Count  = 0;
 		}
-		//===============================================================================
-
-		//11- now we can Execute the commandLine.
-		SelectCommand(Command, Arguments, ArgNum, Options, OptnNum);
-		//===============================================================================
-
 	}
-    //=========================================================================================
-
-}
- 
+    //===================================================================================
+} 
 //===================================================================
 //(_   _)( )                   ( )       ( )   ( )               ( )
 //  | |  | |__    ____   ___   | |/ )     \ \_/ /  ___    _   _  | |

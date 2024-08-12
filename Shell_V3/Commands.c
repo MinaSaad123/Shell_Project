@@ -1,12 +1,6 @@
 //--------------------------------<Include>
 #include "Commands.h"
-
-//===============================================================================
-
-/*******************************************************************************/
-/*                             Global Variables                                */
-/*******************************************************************************/
-char *BuiltInCommands[] = {"mypwd", "myecho", "mycp", "mymv", "mycd", "myhelp", "myenvir", "myuptime", "myexit", "mytype"};
+#include "Shell.h"
 //===============================================================================
 
 /*******************************************************************************/
@@ -265,7 +259,7 @@ void mytype(char *Arg[], int ArgNum)
  	   	  	return;
        	}
 	}
-	for (i = 0; i < 9; i++)
+	for (i = 0; i < NumOfBuiltInCommands; i++)
 	{
 		if ( ( strcmp(Arg[0], BuiltInCommands[i]) ) == 0 )
 		{
@@ -423,9 +417,87 @@ void myfree(int ArgNum, int OptnNum)
 	printf("Swap  total:%luMB   used:%luMB   free:%luMB\n", (info.totalswap * info.mem_unit) / 1024, (info.totalswap * info.mem_unit - info.freeswap * info.mem_unit) / 1024, (info.freeswap * info.mem_unit) / 1024 );
 }
 
+void envir()
+{
+	char buf[100];
+	char readbuf[500];
+	int readSize = 0;
+	int fd = 0;
+
+	if ( getcwd(buf, 100) == NULL )
+ 	{
+ 		perror("Shell");
+ 		return;
+
+ 	}
+
+    strcat(buf, "/enviroment");  //To make the shell see the env file in her folder.
+
+    if ( ( fd = open(buf, O_RDONLY) ) == -1 )
+	{
+		perror("Open");
+		return;
+    }
+
+	if ( ( readSize = read(fd, readbuf, 500) ) == -1 )
+    {
+        perror("read");
+		return;
+    }
+
+	if ( write(fd, readbuf, readSize) == -1 )
+	{
+		perror("Write");
+		return;
+	}
+
+}
+
+void allVar()
+{
+	Node* LocalVar;
+	char buf[100];
+	char readbuf[500];
+	int readSize = 0;
+	int fd = 0;
+
+	if ( getcwd(buf, 100) == NULL )
+ 	{
+ 		perror("Shell");
+ 		return;
+
+ 	}
+
+    strcat(buf, "/enviroment");  //To make the shell see the env file in her folder.
+
+    if ( ( fd = open(buf, O_RDONLY) ) == -1 )
+	{
+		perror("Open");
+		return;
+    }
+
+	if ( ( readSize = read(fd, readbuf, 500) ) == -1 )
+    {
+        perror("read");
+		return;
+    }
+
+	if ( write(fd, readbuf, readSize) == -1 )
+	{
+		perror("Write");
+		return;
+	}
+
+	while ( (LocalVar = GetAllNodes() ) == NULL )
+	{
+		printf("%s=%s\n", LocalVar->Local_Var, LocalVar->Local_Val );
+	}
+
+}
+
 void myhelp(int ArgNum, int OptnNum)
 {
-	char MyCommands[100] = "mypwd\nmyecho\nmycp\nmymv\nmycd\nmyenvir\nmytype\nmyuptime\nmyhelp\nmyexit\n";
+	char MyCommands[100] = "mypwd\nmyecho\nmycp\nmymv\nmycd\nmyenvir\nmytype\nmyuptime\nfree\nenvir\nallVar\nmyhelp\nmyexit\n";
 
 	if (ArgNum != 0 || OptnNum != 0)
 	{

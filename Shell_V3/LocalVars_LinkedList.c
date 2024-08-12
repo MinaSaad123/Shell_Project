@@ -1,19 +1,6 @@
 //----------------------<Include Lib>
 #include "LocalVars_LinkedLists.h"
 
-//*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-//                              User Define
-//*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-struct LinkedList_Struct 
-{
-    char Local_Val[100];
-    char Local_Var[100];
-    struct LinkedList_Struct* pNext;
-
-};
-
-typedef struct LinkedList_Struct Node;
 //=============================================================================
 
 //*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -21,6 +8,7 @@ typedef struct LinkedList_Struct Node;
 //*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 Node* Head = (Node*)NULL;
 Node* Current = (Node*)NULL;
+Node* GetNode = (Node*)NULL;
 //=============================================================================
 
 void Create_LocalVal_Node(char* LocalVar, char* LocalVal)
@@ -82,6 +70,26 @@ char* FindLocalVar(char* LocalVar)
         }
 
         return NULL;
+    }
+}
+
+
+char* GetAllNodes()
+{
+    Node* Temp = NULL;
+
+    if (GetNode == NULL)
+    {
+        GetNode = Head;
+        Temp = GetNode;
+        GetNode = GetNode->pNext;
+        return Temp;
+        
+    } else 
+    {
+        Temp = GetNode;
+        GetNode = GetNode->pNext;
+        return Temp;
     }
 }
 

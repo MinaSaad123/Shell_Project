@@ -44,7 +44,7 @@ void Shell_Init()
 
 }
 
-void Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char *Arg[15], int *ArgNum, char* Optn[15], int *OptnNum, char *OutputRedir[], int* OutputRedirNum, int* OutputErorrRedir[], int* OutputErorrRedirNum, char* InputRedir[], int* InputRedirNum)
+int  Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char *Arg[15], int *ArgNum, char* Optn[15], int *OptnNum, char *OutputRedir[], int* OutputRedirNum, int* OutputErorrRedir[], int* OutputErorrRedirNum, char* InputRedir[], int* InputRedirNum, Pipe_Mode_t* Pipe_State)
 {
     int i = 0;
     int NumOfPipe = 0;
@@ -54,12 +54,13 @@ void Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
     *InputRedirNum = 0;
     *OutputRedirNum = 0;
     *OutputErorrRedirNum = 0;
+    *Pipe_State = Off;
 
-    //*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
-    //I know i can optimize size code but i have no time to manipulate with pointers again    
-
-    //*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+    //*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=|
+    //                                                                                        |
+    //I know i can optimize size code but i have no time to manipulate with pointers again    |
+    //                                                                                        |
+    //*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=|
 
     while (*Ptr != '\0')
     {
@@ -150,14 +151,18 @@ void Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
     {
         int flag = 0;
         MyCommand TempCommand;
+        *Pipe_State = On;
 
         while ( ( *pCommandLine ) != '\0' && NumOfStr != 0)
         {
             if ( (*pCommandLine) == '|' )
             {
                 flag = 1;
-                /*Continue coding here*/
-
+                
+                if ( ( Error = FIFO_buf_enqueue(&Ready_Queue, &TempCommand) ) == FIFO_No_Error )
+                {
+                    return -1;
+                }
 
             } else if (i == 0 ||  flag == 1)
             {
@@ -185,8 +190,8 @@ void Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
                     i++;
                 }
 
-                OutputRedir[*OutputRedirNum] = ( pCommandLine + i );
-                *OutputRedirNum += 1;
+                TempCommand.OutputRedir[TempCommand.OutputRedirNum] = ( pCommandLine + i );
+                TempCommand.OutputRedirNum += 1;
 
                 //Loop until Find NULL terminator.
                 LooptoAfterNullTerminator(pCommandLine, &i);
@@ -200,8 +205,8 @@ void Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
                     i++;
                 }
 
-                OutputErorrRedir[*OutputErorrRedirNum] = ( pCommandLine + i );
-                *OutputErorrRedirNum += 1;
+                TempCommand.OutputErorrRedir[TempCommand.OutputErorrRedirNum] = ( pCommandLine + i );
+                TempCommand.OutputErorrRedirNum += 1;
 
                 //Loop until Find NULL terminator.
                 LooptoAfterNullTerminator(pCommandLine, &i);
@@ -215,8 +220,8 @@ void Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
                     i++;
                 }
 
-                InputRedir[*InputRedirNum] = ( pCommandLine + i );
-                *InputRedirNum += 1;
+                TempCommand.InputRedir[TempCommand.InputRedirNum] = ( pCommandLine + i );
+                TempCommand.InputRedirNum += 1;
 
                 //Loop until Find NULL terminator.
                 LooptoAfterNullTerminator(pCommandLine, &i);
@@ -232,6 +237,8 @@ void Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
             NumOfStr--;
         }
     }
+
+    return 0;
 }
 
 int Default_FileDescriptor(int* Default_fd)
@@ -262,7 +269,7 @@ int Default_FileDescriptor(int* Default_fd)
     *Default_fd = 0;
 }
 
-void SelectCommand(char* Command, char *Arguments[], int ArgNum, char *Options[], int OptnNum)
+void SelectCommand(char* Command, char *Arguments[], int ArgNum, char *Options[], int OptnNum, Pipe_Mode_t Pipe_Mode)
 {
 	if (strcmp(Command, "mypwd") == 0)
 	{
@@ -314,7 +321,7 @@ void SelectCommand(char* Command, char *Arguments[], int ArgNum, char *Options[]
 
     } else
 	{
-		FindCommandInEnviroment(Command, Arguments, ArgNum, Options, OptnNum);
+		FindCommandInEnviroment(Command, Arguments, ArgNum, Options, OptnNum, NULL, Off, 0);
 	}
 }
 
@@ -425,7 +432,7 @@ void Replace_Variable_With_corresponding_Value(char** Command, char *Arguments[]
     }
 }
 
-void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char *Options[], int OptnNum)
+void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char *Options[], int OptnNum, MyCommand * Piped_Command, Pipe_Mode_t Pipe_Mode, int Count)
 {
     /***************************************************/
     /*        i pass my own enviroment file            */
@@ -504,29 +511,95 @@ void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char 
         c++;
         env[c] = NULL;
 
-        for (i = ArgNum - 1; i >= 0; i--)
+        if ( Pipe_Mode == Off )
         {
-            Arguments[i + 1] = Arguments[i];
-        }
-
-        i = 0;
-        ArgNum += 1;
-        Arguments[0] = Command;
-
-        if ( OptnNum != 0 )
-        {
-            while ( i < OptnNum )
-            {        
-                Arguments[ArgNum + i] = Options[i];
-                i++;
+            for (i = ArgNum - 1; i >= 0; i--)
+            {
+                Arguments[i + 1] = Arguments[i];
             }
 
-             Arguments[ArgNum + i] = NULL;
-        }
+            i = 0;
+            ArgNum += 1;
+            Arguments[0] = Command;
 
-        if ( execvpe((const char*)Command, (char* const)Arguments, (char* const)env ) == -1 )
+            if ( OptnNum != 0 )
+            {
+                while ( i < OptnNum )
+                {        
+                    Arguments[ArgNum + i] = Options[i];
+                    i++;
+                }
+
+                Arguments[ArgNum + i] = NULL;
+            }
+
+            if ( execvpe((const char*)Command, (char* const)Arguments, (char* const)env ) == -1 )
+            {
+                printf("This command is not exist\n");
+            }
+
+        } else if ( Pipe_Mode == On )
         {
-            printf("This command is not exist\n");
+            int flag = 0;
+
+	        for (i = 0; i < NumOfBuiltInCommands; i++)
+	        {
+		        if ( ( strcmp(Piped_Command->Command, BuiltInCommands[i]) ) == 0 )
+		        {
+			        flag = 1;
+		        }
+	        }
+
+            if (flag == 1 )
+            {
+                if (write(STDOUT, "You are trying to pipe with built-in Commands\n", strlen("You are trying to pipe with built-in Commands\n")) == -1)
+       	        {
+       		        return;
+       	        }
+            }
+
+            for (i = Piped_Command->ArgNum - 1; i >= 0; i--)
+            {
+                Piped_Command->Arguments[i + 1] = Piped_Command->Arguments[i];
+            }
+
+            i = 0;
+            Piped_Command->ArgNum += 1;
+            Piped_Command->Arguments[0] = Piped_Command->Command;
+
+            if ( Piped_Command->OptnNum != 0 )
+            {
+                while ( i < Piped_Command->OptnNum )
+                {        
+                    Piped_Command->Arguments[Piped_Command->ArgNum + i] = Piped_Command->Options[i];
+                    i++;
+                }
+
+                Piped_Command->Arguments[Piped_Command->ArgNum + i] = NULL;
+            }
+
+            if ( Count == 0 )
+            {
+                close(Pipe[1]);
+
+                dup2(Pipe[0], STDOUT );
+
+                close(Pipe[0]);
+
+            } else
+            {
+                close(Pipe[0]);
+
+                dup2(Pipe[1], STDIN );
+
+                close(Pipe[1]);
+   
+            }
+
+            if ( execvpe((const char*)Piped_Command->Command, (char* const)Piped_Command->Arguments, (char* const)env ) == -1 )
+            {
+                printf("This command is not exist\n");
+            }
         }
 	}    
 }
@@ -568,7 +641,6 @@ void Redirect_FileDescriptors(char *OutputRedir[], int OutputRedirNum, char* Out
 
         i++;
     }
-
 
     i = 0;
     while (i < OutputRedirNum)

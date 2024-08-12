@@ -3,17 +3,24 @@
 
 //-------------------_<Include>
 #include "platform_types.h"
+#include "stdlib.h"
 
-//=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+//=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 //                                            User Define
-//=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+//=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 typedef struct
 {
     char *  Command;
     char ** Arguments;
     char ** Options;
+	char ** OutputRedir;
+	char ** OutputErorrRedir;
+	char ** InputRedir;
     int     ArgNum;
     int     OptnNum;
+	int     OutputRedirNum;
+	int     OutputErorrRedirNum;
+	int     InputRedirNum;
 
 } MyCommand;
 
