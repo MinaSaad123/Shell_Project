@@ -36,6 +36,9 @@ int    InputRedirNum = 0;
 int    default_fd = 0;
 int    readSize = 0;
 int    NumOfStr = 0;
+int    Pipe[2] = {0, 0};
+char * BuiltInCommands[] = {"mypwd", "myecho", "mycp", "mymv", "mycd", "myhelp", "mycommands", "myuptime", "free" "myexit", "mytype", "allVar", "envir"};
+
 
 //=======================================================================================
 
@@ -122,13 +125,14 @@ void main()
 		}
 		//===============================================================================
 
-		//9- detect if there is $variable and replace it's sample table.
-		Replace_Variable_With_corresponding_Value(&Command, Arguments, ArgNum);
-		//===============================================================================
 
-		//10- now we can execute the program
+		//9- now we can execute the program
 		if (Pipe_Mode == Off)
 		{
+			//9- detect if there is $variable and replace it's sample table.
+			Replace_Variable_With_corresponding_Value(&Command, Arguments, ArgNum);
+			//===============================================================================
+
 			// Change redirection if exit
 			if (InputRedirNum != 0 || OutputErorrRedirNum != 0 || OutputRedirNum != 0) 
 			{
@@ -150,7 +154,7 @@ void main()
 
 			for(i = 0; i < 2; i++)
 			{
-				if ( FIFO_buf_dequeue(&Ready_Queue, &Piped_Command) != NULL ) 
+				if ( FIFO_buf_dequeue(&Ready_Queue, &Piped_Command) == FIFO_No_Error ) 
 				{
 					FindCommandInEnviroment(NULL, NULL, 0, NULL, 0, Piped_Command, On, Count);	
 					Count++;

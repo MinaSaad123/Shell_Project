@@ -4,6 +4,7 @@
 //-------------------_<Include>
 #include "platform_types.h"
 #include "stdlib.h"
+#include "string.h"
 
 //=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 //                                            User Define
@@ -11,11 +12,11 @@
 typedef struct
 {
     char *  Command;
-    char ** Arguments;
-    char ** Options;
-	char ** OutputRedir;
-	char ** OutputErorrRedir;
-	char ** InputRedir;
+    char * Arguments[10];
+    char * Options[10];
+	char * OutputRedir[10];
+	char * OutputErorrRedir[10];
+	char * InputRedir[10];
     int     ArgNum;
     int     OptnNum;
 	int     OutputRedirNum;

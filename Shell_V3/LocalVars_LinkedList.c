@@ -14,12 +14,25 @@ Node* GetNode = (Node*)NULL;
 void Create_LocalVal_Node(char* LocalVar, char* LocalVal)
 {
     
-    Node* Temp = (Node*)malloc( sizeof(Head) );
+    Node* Temp = NULL;
+
+    if ( ( Current = FindLocalVar(LocalVar) ) != NULL )
+    {
+        strcpy(Current->Local_Val, LocalVal);
+        return;
+    } 
+
+    
+    Temp = (Node*)malloc( sizeof(Head));
+
+    strcpy(Temp->Local_Var, LocalVar);
+    strcpy(Temp->Local_Val, LocalVal);
 
     if (Head == NULL)
     {
         Head = Temp;
         Current = Head;
+        GetNode = Head;
 
     } else /*try to find last node*/
     {
@@ -32,16 +45,6 @@ void Create_LocalVal_Node(char* LocalVar, char* LocalVal)
 
         Current->pNext = Temp;
         Current = Current->pNext;
-    }
-
-    if ( FindLocalVar(LocalVar) == NULL )
-    {
-        strcpy(Current->Local_Var, LocalVar);
-        strcpy(Current->Local_Val, LocalVal);
-
-    } else
-    {
-        strcpy(Current->Local_Val, LocalVal);
     }
 }
 
@@ -61,7 +64,7 @@ char* FindLocalVar(char* LocalVar)
         {
             if ( strcmp(LocalVar, pTemp->Local_Var) == 0 )
             {
-                return pTemp->Local_Val;
+                return pTemp;
 
             } else
             {
@@ -80,9 +83,8 @@ char* GetAllNodes()
 
     if (GetNode == NULL)
     {
-        GetNode = Head;
         Temp = GetNode;
-        GetNode = GetNode->pNext;
+        GetNode = Head;
         return Temp;
         
     } else 

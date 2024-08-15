@@ -47,11 +47,12 @@ FIFO_buf_status FIFO_buf_enqueue(FIFO_buf_t *FIFO_buf, element_type item)
 	{
 		Temp = (element_type*)malloc(sizeof(item));
 
-		Temp->Arguments = item->Arguments;
-		Temp->Options = item->Options;
-		Temp->OutputRedir = item->OutputRedir;
-		Temp->OutputErorrRedir = item->OutputErorrRedir;
-		Temp->InputRedir = item->InputRedir;
+		strcpy(Temp->Arguments, item->Arguments);
+		strcpy(Temp->Options, item->Options);
+		strcpy(Temp->OutputRedir, item->OutputRedir);
+		strcpy(Temp->OutputErorrRedir, item->OutputErorrRedir);
+		strcpy(Temp->InputRedir, item->InputRedir);
+		Temp->Command = item->Command;
 		Temp->ArgNum = item->ArgNum;
 		Temp->OptnNum = item->OptnNum;
 		Temp->OutputRedirNum = item->OutputErorrRedirNum;
@@ -64,11 +65,12 @@ FIFO_buf_status FIFO_buf_enqueue(FIFO_buf_t *FIFO_buf, element_type item)
 	{
 		Temp = (element_type*)malloc(sizeof(item));
 
-		Temp->Arguments = item->Arguments;
-		Temp->Options = item->Options;
-		Temp->OutputRedir = item->OutputRedir;
-		Temp->OutputErorrRedir = item->OutputErorrRedir;
-		Temp->InputRedir = item->InputRedir;
+		strcpy(Temp->Arguments, item->Arguments);
+		strcpy(Temp->Options, item->Options);
+		strcpy(Temp->OutputRedir, item->OutputRedir);
+		strcpy(Temp->OutputErorrRedir, item->OutputErorrRedir);
+		strcpy(Temp->InputRedir, item->InputRedir);
+		Temp->Command = item->Command;
 		Temp->ArgNum = item->ArgNum;
 		Temp->OptnNum = item->OptnNum;
 		Temp->OutputRedirNum = item->OutputErorrRedirNum;
@@ -90,7 +92,6 @@ FIFO_buf_status FIFO_buf_dequeue(FIFO_buf_t *FIFO_buf, element_type* item)
 	if (FIFO_buf->tail == ( FIFO_buf->base + ( FIFO_buf->length - 1) ) )
 	{
 		*item = *(FIFO_buf->tail);
-		free(FIFO_buf->tail);
 		FIFO_buf->tail = FIFO_buf->base;
 		FIFO_buf->count--;
 
@@ -101,7 +102,6 @@ FIFO_buf_status FIFO_buf_dequeue(FIFO_buf_t *FIFO_buf, element_type* item)
 	} else
 	{
 		*item = *(FIFO_buf->tail);
-		free(FIFO_buf->tail);
 		FIFO_buf->tail++;
 		FIFO_buf->count--;
 	}

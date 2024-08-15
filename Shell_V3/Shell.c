@@ -46,7 +46,7 @@ void Shell_Init()
 
 int  Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char *Arg[15], int *ArgNum, char* Optn[15], int *OptnNum, char *OutputRedir[], int* OutputRedirNum, int* OutputErorrRedir[], int* OutputErorrRedirNum, char* InputRedir[], int* InputRedirNum, Pipe_Mode_t* Pipe_State)
 {
-    int i = 0;
+    int i = 0, Num = NumOfStr;
     int NumOfPipe = 0;
     char* Ptr = pCommandLine;
     *ArgNum = 0;
@@ -62,13 +62,14 @@ int  Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
     //                                                                                        |
     //*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=|
 
-    while (*Ptr != '\0')
+    while (Num != 0)
     {
         if (*Ptr == '|')
         {
             NumOfPipe++;
         }
         Ptr++;
+        Num--;
     }
 
     if (NumOfPipe == 0)
@@ -150,19 +151,20 @@ int  Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
     } else if ( NumOfPipe > 0 )
     {
         int flag = 0;
-        MyCommand TempCommand;
+        MyCommand TempCommand = {NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0};
         *Pipe_State = On;
 
         while ( ( *pCommandLine ) != '\0' && NumOfStr != 0)
         {
-            if ( (*pCommandLine) == '|' )
+            if ( *(pCommandLine + i) == '|' )
             {
                 flag = 1;
                 
-                if ( ( Error = FIFO_buf_enqueue(&Ready_Queue, &TempCommand) ) == FIFO_No_Error )
+                if ( ( Error = FIFO_buf_enqueue(&Ready_Queue, &TempCommand) ) != FIFO_No_Error )
                 {
                     return -1;
                 }
+                i++;
 
             } else if (i == 0 ||  flag == 1)
             {
@@ -236,6 +238,12 @@ int  Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
             }
             NumOfStr--;
         }
+        
+        if ( ( Error = FIFO_buf_enqueue(&Ready_Queue, &TempCommand) ) != FIFO_No_Error )
+        {
+            return -1;
+        }
+
     }
 
     return 0;
@@ -302,9 +310,9 @@ void SelectCommand(char* Command, char *Arguments[], int ArgNum, char *Options[]
 	{
 		mycd(Arguments, ArgNum, Options, OptnNum);
 
-	} else if (strcmp(Command, "myenvir") == 0)
+	} else if (strcmp(Command, "mycommands") == 0)
     {
-        myenvir(ArgNum, OptnNum);
+        mycommands(ArgNum, OptnNum);
 
     } else if (strcmp(Command, "myuptime") == 0) 
     {
@@ -318,6 +326,14 @@ void SelectCommand(char* Command, char *Arguments[], int ArgNum, char *Options[]
     } else if (strcmp(Command, "myfree") == 0)
     {
         myfree(ArgNum, OptnNum);
+
+    } else if (strcmp(Command, "envir") == 0)
+    {
+        envir();
+
+    } else if (strcmp(Command, "allVar") == 0)
+    {
+        allVar();
 
     } else
 	{
@@ -454,7 +470,7 @@ void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char 
     } else if (ID == 0)  /*That is the child*/
     {
         int fd = 0, i = 0, c = 0;
-        char readbuf[500];
+        char readbuf[300];
         char buf[100];
         char *Ptr = NULL;
         char *env[15];
@@ -476,7 +492,7 @@ void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char 
 
         }
 
-        if ( read(fd, readbuf, 500) == -1 )
+        if ( read(fd, readbuf, 300) == -1 )
         {
            	perror("External command");
 		    return;

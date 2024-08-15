@@ -193,7 +193,7 @@ void mycd(char *Arg[], int ArgNum, char *Optn[], int OptnNum)
 	}
 }
 
-void myenvir(int ArgNum, int OptnNum)
+void mycommands(int ArgNum, int OptnNum)
 {
 	int fd = 0, nRead = 0;
     char readbuf[500];
@@ -445,7 +445,7 @@ void envir()
 		return;
     }
 
-	if ( write(fd, readbuf, readSize) == -1 )
+	if ( write(STDOUT, readbuf, readSize) == -1 )
 	{
 		perror("Write");
 		return;
@@ -482,13 +482,13 @@ void allVar()
 		return;
     }
 
-	if ( write(fd, readbuf, readSize) == -1 )
+	if ( write(STDOUT, readbuf, readSize) == -1 )
 	{
 		perror("Write");
 		return;
 	}
 
-	while ( (LocalVar = GetAllNodes() ) == NULL )
+	while ( (LocalVar = GetAllNodes() ) != NULL )
 	{
 		printf("%s=%s\n", LocalVar->Local_Var, LocalVar->Local_Val );
 	}

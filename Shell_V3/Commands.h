@@ -31,12 +31,14 @@ void myecho(char *Arg[], int ArgNum, char *Optn[], int OptnNum);
 void mycp(char *Arg[], int ArgNum, char *Optn[], int OptnNum);
 void mymv(char *Arg[], int ArgNum, char *Optn[], int OptnNum);
 void myhelp(int ArgNum, int OptnNum);
-void myenvir(int ArgNum, int OptnNum);
+void mycommands(int ArgNum, int OptnNum);
 void myExit(int ArgNum, int OptnNum);
 void mycd(char *Arg[], int ArgNum, char *Optn[], int OptnNum);
 void mytype(char *Arg[], int ArgNum);
 void myuptime(int ArgNum, int OptnNum);
 void myfree(int ArgNum, int OptnNum);
+void envir();
+void allVar();
 
 
 #endif
