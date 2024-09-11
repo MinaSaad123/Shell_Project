@@ -164,12 +164,18 @@ int  Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
                 {
                     return -1;
                 }
-                i++;
+                i += 2;
+
+                TempCommand.ArgNum = 0;
+                TempCommand.OptnNum = 0;
+                TempCommand.InputRedirNum = 0;
+                TempCommand.OutputErorrRedirNum = 0;
+                TempCommand.OutputRedirNum = 0;
 
             } else if (i == 0 ||  flag == 1)
             {
                 flag = 0;
-                TempCommand.Command = pCommandLine;
+                TempCommand.Command = pCommandLine + i;
 
                 //Loop until Find NULL terminator.
                 LooptoAfterNullTerminator(pCommandLine, &i);
@@ -251,30 +257,43 @@ int  Parsing_Commandline(char* pCommandLine, int NumOfStr, char **Command, char 
 
 int Default_FileDescriptor(int* Default_fd)
 {
-    if ( dup2(*Default_fd, STDIN) == -1 )
+    if ( Default_fd[0] != 0 )
     {
-        perror("dup2");
-        close(*Default_fd);
-        return -1;
+        if ( dup2(Default_fd[0], STDIN) == -1 )
+        {
+            perror("dup2");
+            close(Default_fd[0]);
+            return -1;
+        }
     }
 
-    if ( dup2(*Default_fd, STDOUT) == -1 )
+    if ( Default_fd[1] != 1 )
     {
-        perror("dup2");
-        close(*Default_fd);
-        return -1;
+        if ( dup2(Default_fd[1], STDOUT) == -1 )
+        {
+            perror("dup2");
+            close(Default_fd[1]);
+            return -1;
+        }
     }
 
-    if ( dup2(*Default_fd, STDERROR) == -1 )
+    if ( Default_fd[2] != 2 )
     {
-        perror("dup2");
-        close(*Default_fd);
-        return -1;
+        if ( dup2(Default_fd[2], STDERROR) == -1 )
+        {
+            perror("dup2");
+            close(Default_fd[2]);
+            return -1;
+        }
     }
     
-    close(*Default_fd);
+    close(Default_fd[0]);
+    close(Default_fd[1]);
+    close(Default_fd[2]);
 
-    *Default_fd = 0;
+    Default_fd[0] = 0;
+    Default_fd[1] = 1;
+    Default_fd[2] = 2;
 }
 
 void SelectCommand(char* Command, char *Arguments[], int ArgNum, char *Options[], int OptnNum, Pipe_Mode_t Pipe_Mode)
@@ -461,13 +480,16 @@ void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char 
     {
         perror("External command");
 
-    } else if (ID > 0) /*That is the parent*/
+    }
+
+    if (ID > 0)
     {
         pid_t status;
 
-        wait(&status);
-
-    } else if (ID == 0)  /*That is the child*/
+        // wait(&status);
+    }
+    
+     else if (ID == 0)  /*That is the child*/
     {
         int fd = 0, i = 0, c = 0;
         char readbuf[300];
@@ -546,8 +568,9 @@ void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char 
                     i++;
                 }
 
-                Arguments[ArgNum + i] = NULL;
             }
+
+            Arguments[ArgNum + i] = NULL;
 
             if ( execvpe((const char*)Command, (char* const)Arguments, (char* const)env ) == -1 )
             {
@@ -590,26 +613,25 @@ void FindCommandInEnviroment(char* Command, char *Arguments[], int ArgNum, char 
                     Piped_Command->Arguments[Piped_Command->ArgNum + i] = Piped_Command->Options[i];
                     i++;
                 }
-
-                Piped_Command->Arguments[Piped_Command->ArgNum + i] = NULL;
             }
+
+            Piped_Command->Arguments[Piped_Command->ArgNum + i] = NULL;
 
             if ( Count == 0 )
             {
-                close(Pipe[1]);
-
-                dup2(Pipe[0], STDOUT );
-
                 close(Pipe[0]);
+
+                dup2(Pipe[1], STDOUT );
+
+                close(Pipe[1]);
 
             } else
             {
-                close(Pipe[0]);
-
-                dup2(Pipe[1], STDIN );
-
                 close(Pipe[1]);
-   
+
+                dup2(Pipe[0], STDIN );
+
+                close(Pipe[0]);  
             }
 
             if ( execvpe((const char*)Piped_Command->Command, (char* const)Piped_Command->Arguments, (char* const)env ) == -1 )
@@ -624,17 +646,16 @@ void Redirect_FileDescriptors(char *OutputRedir[], int OutputRedirNum, char* Out
 {
     int i = 0, fd = 0;
 
+    default_fd[0] = dup(STDIN_FILENO);
+    default_fd[1] = dup(STDOUT_FILENO);
+    default_fd[2] = dup(STDERR_FILENO);
+
     while (i < InputRedirNum)
     {
         if ( ( fd = open(InputRedir[i], O_CREAT | O_RDONLY | O_TRUNC, 0644) ) == -1 )
         {
             perror("open");
             return;
-        }
-
-        if ( *default_fd == 0 )
-        {
-            *default_fd = dup(STDIN);
         }
 
         if ( dup2(fd, STDIN) != STDIN )
@@ -667,11 +688,6 @@ void Redirect_FileDescriptors(char *OutputRedir[], int OutputRedirNum, char* Out
             return;
         }
 
-        if ( *default_fd == 0 )
-        {
-            *default_fd = dup(STDOUT);
-        }
-
         if ( dup2(fd, STDOUT) != STDOUT )
         {
             perror("dup2");
@@ -700,11 +716,6 @@ void Redirect_FileDescriptors(char *OutputRedir[], int OutputRedirNum, char* Out
         {
             perror("open");
             return;
-        }
-
-        if ( *default_fd == 0 )
-        {
-            *default_fd = dup(STDERROR);
         }
 
         if ( dup2(fd, STDERROR) != STDERROR )

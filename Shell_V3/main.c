@@ -33,7 +33,7 @@ int    OptnNum = 0;
 int    OutputRedirNum = 0;
 int    OutputErorrRedirNum = 0;
 int    InputRedirNum = 0;
-int    default_fd = 0;
+int    default_fd[3] = {0, 1, 2};
 int    readSize = 0;
 int    NumOfStr = 0;
 int    Pipe[2] = {0, 0};
@@ -56,23 +56,12 @@ void main()
 
 	//II- While loop
 	while(1)
-	{	
-		//1- Return file descriptor to it's default symbolic link
-		if ( default_fd != 0)
-		{
-			if ( Default_FileDescriptor(&default_fd) == -1 )
-			{
-				printf("Shell: Error with file descriptor\n" );
-				exit(1);	
-			}
-		}
-		//===============================================================================
-		
-		//2- Display shell message
+	{			
+		//1- Display shell message
 		Display_ShellMessage(&ShellMessage);
 		//===============================================================================
 
-		//3- Read from commandline
+		//2- Read from commandline
 		if ( ( readSize = read(STDIN, CommandLine, 100) ) == -1 )
 		{
 			perror("Shell");
@@ -81,18 +70,18 @@ void main()
 		pCommandLine = CommandLine;
 		//===============================================================================
 
-		//4- I will put Null Terminator at the end of code.
+		//3- I will put Null Terminator at the end of code.
 		AddNullTerminator(CommandLine, readSize);
 		//===============================================================================
 
 
-		//5- I will know clean my Buffer CommandLine from duplicated spaces.
+		//4- I will know clean my Buffer CommandLine from duplicated spaces.
 		if (Remove_DuplctSpaces(CommandLine) == -1)
 		{
 			printf("%s[Enter]\n", ShellMessage);
 		}
 
-		//6- I will add NULL terminator instead of spaces.
+		//5- I will add NULL terminator instead of spaces.
 		if (pCommandLine[0] != '\0')
 		{
 			if ( (NumOfStr = MyStrTok(CommandLine, ' ') ) == -1 )
@@ -107,11 +96,11 @@ void main()
 		}
 		//===============================================================================
 
-		//7- detect if there is assign variable and execute it.
+		//6- detect if there is assign variable and execute it.
 		Execute_Assign_operation(&pCommandLine, &NumOfStr);		
 		//===============================================================================
 		
-		//8- now i will get what is command, array of pointers for arrgument, argument number, array of pointers for arrgument option, option number.
+		//7- now i will get what is command, array of pointers for arrgument, argument number, array of pointers for arrgument option, option number.
 		if ( NumOfStr == 0 )
 		{
 			continue;			
@@ -126,17 +115,17 @@ void main()
 		//===============================================================================
 
 
-		//9- now we can execute the program
+		//8- now we can execute the program
 		if (Pipe_Mode == Off)
 		{
-			//9- detect if there is $variable and replace it's sample table.
+			// detect if there is $variable and replace it's sample table.
 			Replace_Variable_With_corresponding_Value(&Command, Arguments, ArgNum);
 			//===============================================================================
 
 			// Change redirection if exit
 			if (InputRedirNum != 0 || OutputErorrRedirNum != 0 || OutputRedirNum != 0) 
 			{
-				Redirect_FileDescriptors(OutputRedir, OutputRedirNum, OutputErorrRedir, OutputErorrRedirNum, InputRedir, InputRedirNum, &default_fd);
+				Redirect_FileDescriptors(OutputRedir, OutputRedirNum, OutputErorrRedir, OutputErorrRedirNum, InputRedir, InputRedirNum, default_fd);
 			}
 			//===========================================================================
 
@@ -163,6 +152,18 @@ void main()
 
 			Count  = 0;
 		}
+
+		//9- Return file descriptor to it's default symbolic link
+		if ( default_fd[0] != 0 || default_fd[1] != 1 || default_fd[2] != 2 )
+		{
+			if ( Default_FileDescriptor(default_fd) == -1 )
+			{
+				printf("Shell: Error with file descriptor\n" );
+				exit(1);	
+			}
+		}
+		//===============================================================================
+
 	}
     //===================================================================================
 } 

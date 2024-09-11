@@ -1,10 +1,11 @@
 //========================<Include>
-#include"Pipeline_FIFO.h"
+#include "Pipeline_FIFO.h"
 
 //                          *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 //--------------------------*                     Generic Macros                    *------------------------------
 //                          *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 #define NULL (void*)0
+
 
 /*                                                |-------------------------|
  *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*|   Function Implement    |-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-//
@@ -34,6 +35,7 @@ FIFO_buf_status FIFO_buf_init(FIFO_buf_t* FIFO_buf, element_type* buf, uint32_t 
 FIFO_buf_status FIFO_buf_enqueue(FIFO_buf_t *FIFO_buf, element_type item)
 {
 	element_type Temp;
+	int i = 0;
 
 	if (FIFO_buf->base == NULL || FIFO_buf->head == NULL)
 	{
@@ -47,17 +49,54 @@ FIFO_buf_status FIFO_buf_enqueue(FIFO_buf_t *FIFO_buf, element_type item)
 	{
 		Temp = (element_type*)malloc(sizeof(item));
 
-		strcpy(Temp->Arguments, item->Arguments);
-		strcpy(Temp->Options, item->Options);
-		strcpy(Temp->OutputRedir, item->OutputRedir);
-		strcpy(Temp->OutputErorrRedir, item->OutputErorrRedir);
-		strcpy(Temp->InputRedir, item->InputRedir);
-		Temp->Command = item->Command;
 		Temp->ArgNum = item->ArgNum;
 		Temp->OptnNum = item->OptnNum;
 		Temp->OutputRedirNum = item->OutputErorrRedirNum;
 		Temp->InputRedirNum = item->InputRedirNum;
 
+		// i can optimize this part in one function but not now.
+		while ( i < ( Temp->ArgNum ) )  
+		{
+			Temp->Arguments[i] = item->Arguments[i];
+			i++;
+		}
+		
+		i = 0;
+		while ( i < ( Temp->OptnNum ) )
+		{
+			Temp->Options[i] = item->Options[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->OutputRedirNum ) )
+		{
+			Temp->OutputRedir[i] = item->OutputRedir[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->OutputRedirNum ) )
+		{
+			Temp->OutputRedir[i] = item->OutputRedir[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->OutputErorrRedirNum ) )
+		{
+			Temp->OutputErorrRedir[i] = item->OutputErorrRedir[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->InputRedirNum ) )
+		{
+			Temp->InputRedir[i] = item->InputRedir[i];
+			i++;
+		}
+
+		Temp->Command = item->Command;
 		*(FIFO_buf->head) = Temp;
 		FIFO_buf->head = FIFO_buf->base;
 
@@ -65,18 +104,56 @@ FIFO_buf_status FIFO_buf_enqueue(FIFO_buf_t *FIFO_buf, element_type item)
 	{
 		Temp = (element_type*)malloc(sizeof(item));
 
-		strcpy(Temp->Arguments, item->Arguments);
-		strcpy(Temp->Options, item->Options);
-		strcpy(Temp->OutputRedir, item->OutputRedir);
-		strcpy(Temp->OutputErorrRedir, item->OutputErorrRedir);
-		strcpy(Temp->InputRedir, item->InputRedir);
-		Temp->Command = item->Command;
 		Temp->ArgNum = item->ArgNum;
 		Temp->OptnNum = item->OptnNum;
 		Temp->OutputRedirNum = item->OutputErorrRedirNum;
 		Temp->InputRedirNum = item->InputRedirNum;
 
-		*(FIFO_buf->head) = item;
+		// i can optimize this part in one function but not now.
+		while ( i < ( Temp->ArgNum ) )  
+		{
+			Temp->Arguments[i] = item->Arguments[i];
+			i++;
+		}
+		
+		i = 0;
+		while ( i < ( Temp->OptnNum ) )
+		{
+			Temp->Options[i] = item->Options[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->OutputRedirNum ) )
+		{
+			Temp->OutputRedir[i] = item->OutputRedir[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->OutputRedirNum ) )
+		{
+			Temp->OutputRedir[i] = item->OutputRedir[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->OutputErorrRedirNum ) )
+		{
+			Temp->OutputErorrRedir[i] = item->OutputErorrRedir[i];
+			i++;
+		}
+
+		i = 0;
+		while ( i < ( Temp->InputRedirNum ) )
+		{
+			Temp->InputRedir[i] =  item->InputRedir[i];
+			i++;
+		}
+
+		Temp->Command = item->Command;
+
+		*(FIFO_buf->head) = Temp;
 		FIFO_buf->head++;
 	}
 

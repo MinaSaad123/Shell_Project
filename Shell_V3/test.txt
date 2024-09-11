@@ -1,0 +1,17 @@
+total 144
+-rw-rw-r-- 1 minasaad minasaad  9447 Sep  5 12:28 Commands.c
+-rw-rw-r-- 1 minasaad minasaad  1763 Aug 13 20:02 Commands.h
+-rwxrwxr-x 1 minasaad minasaad 56912 Sep 10 03:42 Executable.elf
+-rw-rw-r-- 1 minasaad minasaad  1898 Aug 14 03:52 LocalVars_LinkedList.c
+-rw-rw-r-- 1 minasaad minasaad   840 Aug 12 06:30 LocalVars_LinkedLists.h
+-rw-rw-r-- 1 minasaad minasaad  4898 Sep  6 19:20 Pipeline_FIFO.c
+-rw-rw-r-- 1 minasaad minasaad  2190 Sep  5 13:03 Pipeline_FIFO.h
+-rw-rw-r-- 1 minasaad minasaad 18157 Sep 10 03:42 Shell.c
+-rw-rw-r-- 1 minasaad minasaad  2888 Aug 13 19:52 Shell.h
+-rw-rw-r-- 1 minasaad minasaad  2881 Aug 10 20:36 TextManipilation.c
+-rw-rw-r-- 1 minasaad minasaad   551 Aug 12 07:41 TextManipilation.h
+-rw-rw-r-- 1 minasaad minasaad   168 Aug  8 01:41 enviroment
+-rw-rw-r-- 1 minasaad minasaad   520 Sep  6 19:41 gdbscript.gdb
+-rw-rw-r-- 1 minasaad minasaad  6478 Sep 10 00:32 main.c
+-rw-rw-r-- 1 minasaad minasaad  2421 Aug 10 19:27 platform_types.h
+-rw-r--r-- 1 minasaad minasaad     0 Sep 10 03:42 test.txt
